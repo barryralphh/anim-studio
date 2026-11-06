@@ -9,6 +9,9 @@ on:
         description: "json list of scenes"
         default: '["assassin","fern"]'
 
+permissions:
+  contents: write
+
 jobs:
   render:
     runs-on: ubuntu-24.04
@@ -53,6 +56,10 @@ jobs:
           pattern: frames-${{ matrix.scene }}-*
           path: frames
           merge-multiple: true
+      - name: install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
       - name: make video or contact sheet
         run: bash scripts/assemble.sh ${{ matrix.scene }} ${{ inputs.preview }}
       - uses: actions/upload-artifact@v4
@@ -60,3 +67,24 @@ jobs:
           name: video-${{ matrix.scene }}
           path: final/
           retention-days: 5
+      - name: publish to out branch
+        run: |
+          cp -r final /tmp/final
+          git config user.name actions
+          git config user.email actions@users.noreply.github.com
+          git fetch origin out:out 2>/dev/null || true
+          if git show-ref --verify --quiet refs/heads/out; then
+            git checkout -q out
+          else
+            git checkout -q --orphan out
+            git rm -rf -q .
+          fi
+          mkdir -p ${{ matrix.scene }}
+          cp /tmp/final/* ${{ matrix.scene }}/
+          git add ${{ matrix.scene }}
+          git commit -q -m "render ${{ matrix.scene }} preview=${{ inputs.preview }}"
+          for i in 1 2 3 4 5 6; do
+            git push origin out && break
+            git pull -q --rebase origin out || true
+            sleep 4
+          done

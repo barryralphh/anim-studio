@@ -5,7 +5,7 @@ random.seed(21)
 sc = setup_render(A, samples=48)
 
 SUN = vnorm((0.55, -0.5, 0.66))
-sky_world(SUN, zenith=hexc('#3a86dc'), horizon=hexc('#d3ecff'), ground=hexc('#d3ecff'),
+sky_world(SUN, zenith=hexc('#3a86dc'), horizon=hexc('#a9d3ff'), ground=hexc('#8fc2f2'),
           glow=hexc('#ffe2b0'), sun_col=hexc('#fff6e0'), glow_pow=6.0, glow_amt=0.5, sun_amt=8.0,
           strength=1.05, hz_pow=0.7, z_scale=1.4)
 make_sun(SUN, (1.0, 0.93, 0.82), 3.6, angle=0.05)
@@ -169,7 +169,7 @@ matShip = vc_material('Ship', rough=0.6)
 ship = Dyn('Ship', matShip)
 clouds = Dyn('Clouds', matCloud)
 
-CL = [(random.uniform(-13, 13), random.uniform(-13, 13), random.uniform(4.6, 6.2), random.uniform(0.8, 1.3), random.uniform(0.25, 0.5)) for _ in range(7)]
+CL = [(random.uniform(-13, 13), random.uniform(-13, 13), random.uniform(4.6, 6.2), random.uniform(0.45, 0.8), random.uniform(0.25, 0.5)) for _ in range(6)]
 
 
 def clouds_mesh(t):
@@ -185,7 +185,7 @@ def clouds_mesh(t):
 def ship_mesh(t):
     m = M()
     th = 0.55 - 0.16 * t
-    rr = 9.3
+    rr = 8.4
     x, y = rr * math.cos(th), rr * math.sin(th)
     hd = th - math.pi / 2
     bob = 0.04 * math.sin(t * 2.2)
@@ -238,8 +238,8 @@ def pin_mesh(t):
 def update(t):
     u = ease(t / 10.0)
     az = math.radians(lerp(212, 262, u))
-    r = lerp(27.0, 19.5, u)
-    z = lerp(15.5, 9.8, u)
+    r = lerp(30.0, 24.0, u)
+    z = lerp(17.5, 12.5, u)
     head = route_head(t)
     k = 0.40 * u
     tgt = (lerp(0.0, head[0], k), lerp(0.0, head[1], k), 0.4)

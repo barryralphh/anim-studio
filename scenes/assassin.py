@@ -122,13 +122,13 @@ for k in range(24):
     th = math.radians(random.uniform(-105, 105))
     D = random.uniform(780, 1500)
     px, py = D * math.sin(th), D * math.cos(th)
-    rad = random.uniform(130, 240)
-    hh = random.uniform(95, 210)
-    base_c = haze(hexc(random.choice(['#a68a86', '#9b7f80', '#b49484'])), D, mixc(HZ, hexc('#c9a1b0'), 0.4), 0.0016)
-    snow_c = haze(hexc('#fff4ea'), D, HZ, 0.0016)
-    mt.cyl(px, py, GZ - 10, rad, hh, 7, base_c, r2=0.0, tf=RZ(random.uniform(0, 1)))
+    rad = random.uniform(200, 330)
+    hh = random.uniform(70, 150)
+    base_c = haze(hexc(random.choice(['#a68a86', '#9b7f80', '#b49484'])), D, mixc(HZ, hexc('#c9a1b0'), 0.4), 0.0026)
+    snow_c = haze(hexc('#fff4ea'), D, HZ, 0.0026)
+    mt.cyl(px, py, GZ - 10, rad, hh, 10, base_c, r2=0.0, tf=RZ(random.uniform(0, 1)))
     f_ = 0.70
-    mt.cyl(px, py, GZ - 10 + hh * f_, rad * (1 - f_) * 1.02, hh * (1 - f_) * 1.0, 7, snow_c, r2=0.0, tf=RZ(0))
+    mt.cyl(px, py, GZ - 10 + hh * f_, rad * (1 - f_) * 1.02, hh * (1 - f_) * 1.0, 10, snow_c, r2=0.0, tf=RZ(0))
 mt.to_obj('Mountains', matCity)
 
 # ---------- foreground tower ----------
@@ -136,13 +136,10 @@ tw = M()
 stone, stone2, wood = hexc('#d9bd94'), hexc('#c2a173'), hexc('#6b4a2f')
 tw.box(0, 0, -60, 8, 8, 60, stone)
 tw.box(0, 0, 0, 8.6, 8.6, 0.35, stone2)
-tw.box(-4.1, 0, 0.35, 0.5, 8.6, 0.9, stone)
-tw.box(4.1, 0, 0.35, 0.5, 8.6, 0.9, stone)
 tw.box(0, -4.1, 0.35, 8.6, 0.5, 0.9, stone)
 for sx_ in (-1, 1):
-    for sy_ in (-1, 1):
-        tw.box(sx_ * 4.1, sy_ * 4.1, 0.35, 0.8, 0.8, 2.3, stone2)
-        tw.cyl(sx_ * 4.1, sy_ * 4.1, 2.65, 0.75, 0.9, 4, hexc('#b85f3c'), r2=0.0, tf=RZ(math.pi / 4))
+    tw.box(sx_ * 4.1, -4.1, 0.35, 0.8, 0.8, 2.3, stone2)
+    tw.cyl(sx_ * 4.1, -4.1, 2.65, 0.75, 0.9, 4, hexc('#b85f3c'), r2=0.0, tf=RZ(math.pi / 4))
 tw.box(0, 5.2, 0.05, 0.55, 5.8, 0.3, wood)
 tw.box(0, 8.0, 0.02, 0.62, 0.3, 0.36, hexc('#4a3220'))
 for yy in (3.2, 5.0, 6.8):
@@ -207,7 +204,7 @@ fg.to_obj('Figure', matFig)
 
 
 def cloak_pos(u, v, t):
-    x = (u - 0.5) * (0.46 + 0.38 * v)
+    x = (u - 0.5) * (0.34 + 0.2 * v)
     yb = -0.17 - 0.1 * v - 0.05 * math.sin(math.pi * u) * v
     zb = 1.52 - 1.28 * v
     w = v ** 1.4
@@ -297,14 +294,14 @@ def embers_mesh(t):
 
 def update(t):
     u = ease(t / 10.0)
-    th = math.radians(lerp(-34, 76, u))
-    r = lerp(5.0, 7.4, u)
-    TG = (FP[0], FP[1], 1.55 + FP[2] - 0.35)
-    pos = (TG[0] + r * math.sin(th) + 0.012 * math.sin(t * 2.3),
-           TG[1] - r * math.cos(th) + 0.012 * math.cos(t * 1.9),
-           TG[2] + lerp(0.5, 1.4, u) + 0.05 * math.sin(t * 1.1))
-    k = ease(u * 1.15)
-    tgt = (lerp(0.0, TG[0], k), lerp(FP[1] + 12, TG[1] - 0.2, k), lerp(-5.5, TG[2] - 0.05, k))
+    th = math.radians(lerp(-42, 58, u))
+    r = lerp(4.6, 6.4, u)
+    TG = (FP[0], FP[1], FP[2] + 1.35)
+    pos = (TG[0] + r * math.sin(th) + 0.01 * math.sin(t * 2.3),
+           TG[1] - r * math.cos(th) + 0.01 * math.cos(t * 1.9),
+           TG[2] + lerp(0.15, 0.9, u) + 0.04 * math.sin(t * 1.1))
+    k = ease(min(1.0, u * 1.2))
+    tgt = (lerp(0.9, TG[0], k), lerp(TG[1] + 3.0, TG[1], k), lerp(TG[2] - 0.5, TG[2] - 0.1, k))
     aim(cam, pos, tgt)
     cam.data.dof.focus_distance = math.sqrt(sum((pos[i] - TG[i]) ** 2 for i in range(3)))
     cloak.update(t)

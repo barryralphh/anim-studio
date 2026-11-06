@@ -1,0 +1,59 @@
+name: render
+on:
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: "1 = 4 small test frames per scene, 0 = full 10s render"
+        default: "1"
+      scenes:
+        description: "json list of scenes"
+        default: '["assassin","fern"]'
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        scene: ${{ fromJSON(inputs.scenes) }}
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - name: install blender
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq blender
+          blender --version | head -2
+      - name: render shard
+        run: |
+          mkdir -p out
+          cat scenes/common.py scenes/${{ matrix.scene }}.py > run.py
+          blender -b -noaudio -P run.py -- --shard ${{ matrix.shard }} --shards 8 --out out --preview ${{ inputs.preview }}
+          ls out | head
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frames-${{ matrix.scene }}-${{ matrix.shard }}
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 3
+
+  assemble:
+    needs: render
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        scene: ${{ fromJSON(inputs.scenes) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: frames-${{ matrix.scene }}-*
+          path: frames
+          merge-multiple: true
+      - name: make video or contact sheet
+        run: bash scripts/assemble.sh ${{ matrix.scene }} ${{ inputs.preview }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ matrix.scene }}
+          path: final/
+          retention-days: 5
